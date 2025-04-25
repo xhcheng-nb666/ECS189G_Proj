@@ -13,7 +13,7 @@ from torch import nn
 import numpy as np
 
 
-class Method_MLP(method, nn.Module):
+class Method_Improved_MLP(method, nn.Module):
     data = None
     # it defines the max rounds to train the model
     max_epoch = 500
@@ -55,9 +55,9 @@ class Method_MLP(method, nn.Module):
     # stage 2-2 & 2-3
     def train(self, X, y):
         # check here for the torch.optim doc: https://pytorch.org/docs/stable/optim.html
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate, weight_decay=1e-4)
         # check here for the nn.CrossEntropyLoss doc: https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html
-        loss_function = nn.CrossEntropyLoss()
+        loss_function = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
         # for training accuracy investigation purpose
         # accuracy_evaluator = Evaluate_Accuracy('training evaluator', '')
 
@@ -116,7 +116,7 @@ class Method_MLP(method, nn.Module):
         plt.plot(model.loss_history, label='Training Loss')
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
-        plt.title('Training Loss Curve with 1 hidden layers')
+        plt.title('Training Loss Curve with AdamW & label smoothing')
         plt.legend()
 
         # Plot Accuracy
@@ -124,12 +124,12 @@ class Method_MLP(method, nn.Module):
         plt.plot(model.accuracy_history, label='Training Accuracy')
         plt.xlabel('Epoch')
         plt.ylabel('Accuracy')
-        plt.title('Training Accuracy Curve with 1 hidden layers')
+        plt.title('Training Accuracy Curve with AdamW & label smoothing')
         plt.legend()
 
         plt.tight_layout()
-        plt.savefig('learning_curves_1.png')
-        print("Saved learning_curves.png")
+        plt.savefig('learning_curves_update.png')
+        print("Saved learning_curves_update.png")
     '''
     
     def run(self):
@@ -139,12 +139,12 @@ class Method_MLP(method, nn.Module):
         print('--start testing...')
         pred_y = self.test(self.data['test']['X'])
         true_y = self.data['test']['y']
-        
-        print('--evaluation metrics--')
+
         metrics = self.evaluate(true_y, pred_y.numpy())
         for k, v in metrics.items():
             print(f'{k}: {v:.4f}')
+        
+        return metrics
 
-        # return {'pred_y': pred_y, 'true_y': true_y, 'metrics': metrics}
 
             
