@@ -47,7 +47,6 @@ class Method_Improved_MLP(method, nn.Module):
         # we do softmax along dim=1 to get the normalized classification probability distributions for each instance
         y_pred = self.activation_func_2(self.fc_layer_2(h))
         return y_pred
-        
 
     # backward error propagation will be implemented by pytorch automatically
     # so we don't need to define the error backpropagation function here
@@ -67,7 +66,7 @@ class Method_Improved_MLP(method, nn.Module):
         # it will be an iterative gradient updating process
         # we don't do mini-batch, we use the whole input as one batch
         # you can try to split X and y into smaller-sized batches by yourself
-        for epoch in range(self.max_epoch): # you can do an early stop if self.max_epoch is too much...
+        for epoch in range(self.max_epoch):  # you can do an early stop if self.max_epoch is too much...
             # get the output, we need to covert X into torch.tensor so pytorch algorithm can operate on it
             y_pred = self.forward(torch.FloatTensor(np.array(X)))
             # convert y to torch.tensor as well
@@ -87,8 +86,7 @@ class Method_Improved_MLP(method, nn.Module):
             self.loss_history.append(train_loss.item())
             self.accuracy_history.append(accuracy_score(y, y_pred.argmax(dim=1).numpy()))
 
-
-            if epoch%100 == 0:
+            if epoch % 100 == 0:
                 pred_labels = y_pred.argmax(dim=1).numpy()
                 print(f"Epoch {epoch}, Loss: {train_loss.item():.4f}, Acc: {self.accuracy_history[-1]:.4f}")
 
@@ -99,15 +97,15 @@ class Method_Improved_MLP(method, nn.Module):
             'precision_macro': precision_score(y_true, y_pred, average='macro'),
             'recall_macro': recall_score(y_true, y_pred, average='macro')
         }
-    
+
     def test(self, X):
         # do the testing, and result the result
         y_pred = self.forward(torch.FloatTensor(np.array(X)))
         # convert the probability distributions to the corresponding labels
         # instances will get the labels corresponding to the largest probability
         return y_pred.max(1)[1]
-    
-    '''
+
+
     def plot_learning_curves(model):
         plt.figure(figsize=(12, 5))
 
@@ -116,7 +114,7 @@ class Method_Improved_MLP(method, nn.Module):
         plt.plot(model.loss_history, label='Training Loss')
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
-        plt.title('Training Loss Curve with AdamW & label smoothing')
+        plt.title('Training Loss Curve with 3 layers')
         plt.legend()
 
         # Plot Accuracy
@@ -124,14 +122,14 @@ class Method_Improved_MLP(method, nn.Module):
         plt.plot(model.accuracy_history, label='Training Accuracy')
         plt.xlabel('Epoch')
         plt.ylabel('Accuracy')
-        plt.title('Training Accuracy Curve with AdamW & label smoothing')
+        plt.title('Training Accuracy Curve with 3 layers')
         plt.legend()
 
         plt.tight_layout()
         plt.savefig('learning_curves_update.png')
         print("Saved learning_curves_update.png")
-    '''
-    
+
+
     def run(self):
         print('method running...')
         print('--start training...')
@@ -143,8 +141,7 @@ class Method_Improved_MLP(method, nn.Module):
         metrics = self.evaluate(true_y, pred_y.numpy())
         for k, v in metrics.items():
             print(f'{k}: {v:.4f}')
-        
+
         return metrics
 
 
-            

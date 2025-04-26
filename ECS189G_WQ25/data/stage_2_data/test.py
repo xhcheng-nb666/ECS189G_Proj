@@ -1,8 +1,8 @@
 import pandas as pd
 
 # Load the data
-train_df = pd.read_csv("/home/xhangc/ss1_ECS/ECS189G/stage_2_data/train.csv")
-test_df = pd.read_csv("/home/xhangc/ss1_ECS/ECS189G/stage_2_data/test.csv")
+train_df = pd.read_csv("train.csv")
+test_df = pd.read_csv("test.csv")
 
 # Show basic structure
 print("Train shape:", train_df.shape)
