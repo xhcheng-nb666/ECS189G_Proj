@@ -10,20 +10,23 @@ class First_CNN(method, nn.Module):
     data = None
     max_epoch = 500
     learning_rate = 1e-3
+    batch_size = 64  # Added batch size parameter
 
     def __init__(self, mName, mDescription):
         method.__init__(self, mName, mDescription)
         nn.Module.__init__(self)
 
-        # Simple architecture
+        # Same architecture with dropout added
         self.conv1 = nn.Conv2d(1, 4, kernel_size=3, padding=1)
         self.pool = nn.MaxPool2d(2, 2)
+        self.dropout = nn.Dropout(0.2)  # Added dropout layer
         self.fc1 = nn.Linear(4 * 14 * 14, 10)
         self.relu = nn.ReLU()
 
     def forward(self, x):
         x = self.pool(self.relu(self.conv1(x)))
         x = x.view(-1, 4 * 14 * 14)
+        x = self.dropout(x)  # Apply dropout before the final layer
         x = self.fc1(x)
         return x
 
@@ -36,30 +39,48 @@ class First_CNN(method, nn.Module):
         }
 
     def train(self, X, y):
-        optimizer = torch.optim.Adam(self.parameters())
+        # Switch to AdamW optimizer with small weight decay
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate, weight_decay=0.01)
         loss_function = nn.CrossEntropyLoss()
 
         self.loss_history = []
         self.accuracy_history = []
 
+        # Convert data to tensors
         X_tensor = torch.FloatTensor(X)
         y_tensor = torch.LongTensor(y)
 
+        # Create dataset and dataloader for batch processing
+        dataset = torch.utils.data.TensorDataset(X_tensor, y_tensor)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
+
         for epoch in range(self.max_epoch):
-            y_pred = self.forward(X_tensor)
-            loss = loss_function(y_pred, y_tensor)
+            epoch_loss = 0
+            epoch_correct = 0
+            total_samples = 0
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+            # Training loop with batches
+            for batch_X, batch_y in dataloader:
+                y_pred = self.forward(batch_X)
+                loss = loss_function(y_pred, batch_y)
 
-            accuracy = accuracy_score(y, y_pred.argmax(dim=1).numpy())
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
-            self.loss_history.append(loss.item())
+                epoch_loss += loss.item() * len(batch_y)
+                epoch_correct += (y_pred.argmax(dim=1) == batch_y).sum().item()
+                total_samples += len(batch_y)
+
+            # Calculate average loss and accuracy for the epoch
+            avg_loss = epoch_loss / total_samples
+            accuracy = epoch_correct / total_samples
+
+            self.loss_history.append(avg_loss)
             self.accuracy_history.append(accuracy)
 
             if epoch % 50 == 0:
-                print(f"Epoch {epoch}, Loss: {loss.item():.4f}, Acc: {accuracy:.4f}")
+                print(f"Epoch {epoch}, Loss: {avg_loss:.4f}, Acc: {accuracy:.4f}")
 
     def test(self, X):
         with torch.no_grad():
@@ -100,3 +121,14 @@ class First_CNN(method, nn.Module):
         print('------------------------\n')
 
         return metrics
+
+    def save_model(self, path='model_weights.pth'):
+        """Save model weights to a file"""
+        torch.save(self.state_dict(), path)
+        print(f"Model weights saved to {path}")
+
+    def load_model(self, path='model_weights.pth'):
+        """Load model weights from a file"""
+        self.load_state_dict(torch.load(path))
+        self.eval()  # Set the model to evaluation mode
+        print(f"Model weights loaded from {path}")

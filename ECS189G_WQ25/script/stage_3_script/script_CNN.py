@@ -19,6 +19,7 @@ cnn = First_CNN("CNN", "")
 cnn.data = mnist_data
 original_metrics = cnn.run()
 cnn.plot_learning_curves()
+cnn.save_model('first.pth')
 
 mid = time.time()
 
