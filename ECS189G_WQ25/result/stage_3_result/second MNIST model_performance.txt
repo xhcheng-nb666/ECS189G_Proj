@@ -1,0 +1,6 @@
+accuracy: 0.99
+f1_macro: 0.9899448403743604
+precision_macro: 0.9900085787648347
+recall_macro: 0.9898909528388709
+
+Time elapsed: 351.23 seconds

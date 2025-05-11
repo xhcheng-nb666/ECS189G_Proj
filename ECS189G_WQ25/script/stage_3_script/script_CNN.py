@@ -6,6 +6,7 @@ import numpy as np
 from local_code.stage_3_code.Dataset_Loader import Dataset_Loader
 from local_code.stage_3_code.first_CNN import First_CNN
 from local_code.stage_3_code.cifar_CNN import RGB_CNN
+from local_code.stage_3_code.mnist_modified import mnist_CNN
 import time
 import matplotlib.pyplot as plt
 import torch.multiprocessing as mp
@@ -36,8 +37,20 @@ def plot_learning_curves(model, fig_name):
     plt.ylabel('Accuracy')
 
     plt.tight_layout()
-    plt.savefig(fig_name)
-    print(f"Saved {fig_name}")
+    
+    os.makedirs("../../result/stage_3_result", exist_ok=True)
+    save_path = os.path.join("../../result/stage_3_result", fig_name)
+    plt.savefig(save_path)
+    print(f"Saved {save_path}")
+
+def save_metrics(metrics, time, filename):
+    os.makedirs("../../result/stage_3_result", exist_ok=True)
+    path = os.path.join("../../result/stage_3_result", filename)
+    with open(path, 'w') as f:
+        for k, v in metrics.items():
+            f.write(f"{k}: {v}\n")
+        f.write(f"\nTime elapsed: {time:.2f} seconds")
+    print(f"Saved {path}")
 
 
 def run_cnn(model_name, model, dataset_name, dataset_path, plt_name):
@@ -51,6 +64,8 @@ def run_cnn(model_name, model, dataset_name, dataset_path, plt_name):
     plot_learning_curves(cnn, plt_name)
     cnn.save_model(model_name + '.pth')
     end = time.time()
+    elapsed_time = end - start
+    save_metrics(metrics, elapsed_time, f"{model_name}_performance.txt")
     print(f"Time elapsed to train {model_name}: {end - start:.2f} seconds")
 
 def main():
@@ -63,8 +78,10 @@ def main():
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method('spawn')
 
-    run_cnn("Simple CNN for MNIST", First_CNN, "MNIST", MNIST_PATH, "MNIST_learning_curves.png")
-
+    # run_cnn("Simple CNN for MNIST", First_CNN, "MNIST", MNIST_PATH, "MNIST_learning_curves.png")
+    # run_cnn("second MNIST model", mnist_CNN, "MNIST", MNIST_PATH, "second_MNIST_learning_curves.png")
+    # run_cnn("firt_CIFAR_CNN", RGB_CNN, "CIFAR", CIFAR_PATH, "CIFAR_learning_curves.png")
+    run_cnn("first_CIFAR_CNN", RGB_CNN, "CIFAR", CIFAR_PATH, "CIFAR_learning_curves.png")
 
 if __name__ == "__main__":
     main()
