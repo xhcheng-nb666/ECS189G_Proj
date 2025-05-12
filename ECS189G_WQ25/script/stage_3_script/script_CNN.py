@@ -7,6 +7,7 @@ from local_code.stage_3_code.Dataset_Loader import Dataset_Loader
 from local_code.stage_3_code.first_CNN import First_CNN
 from local_code.stage_3_code.cifar_CNN import RGB_CNN
 from local_code.stage_3_code.mnist_modified import mnist_CNN
+from local_code.stage_3_code.simple_cifar import CIFAR_CNN
 import time
 import matplotlib.pyplot as plt
 import torch.multiprocessing as mp
@@ -81,7 +82,7 @@ def main():
     # run_cnn("Simple CNN for MNIST", First_CNN, "MNIST", MNIST_PATH, "MNIST_learning_curves.png")
     # run_cnn("second MNIST model", mnist_CNN, "MNIST", MNIST_PATH, "second_MNIST_learning_curves.png")
     # run_cnn("firt_CIFAR_CNN", RGB_CNN, "CIFAR", CIFAR_PATH, "CIFAR_learning_curves.png")
-    run_cnn("first_CIFAR_CNN", RGB_CNN, "CIFAR", CIFAR_PATH, "CIFAR_learning_curves.png")
+    run_cnn("simple_CIFAR", CIFAR_CNN, "CIFAR", CIFAR_PATH, "simple_CIFAR_learning_curves.png")
 
 if __name__ == "__main__":
     main()
