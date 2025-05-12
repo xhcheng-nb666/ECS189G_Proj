@@ -1,0 +1,5 @@
+--evaluation metrics--
+accuracy: 0.9693
+f1_macro: 0.9690
+precision_macro: 0.9691
+recall_macro: 0.9690

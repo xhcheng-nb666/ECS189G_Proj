@@ -6,11 +6,11 @@ from torch import nn
 import numpy as np
 
 
-class First_CNN(method, nn.Module):
+class mnist_CNN(method, nn.Module):
     data = None
     max_epoch = 500
     learning_rate = 1e-3
-    batch_size = 64
+    batch_size = 256
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # Add device detection
 
     def __init__(self, mName, mDescription):
@@ -18,12 +18,21 @@ class First_CNN(method, nn.Module):
         nn.Module.__init__(self)
 
         # Increase batch size for faster training
-        self.batch_size = 256  # Increased from 64
 
-        self.conv1 = nn.Conv2d(1, 4, kernel_size=3, padding=1)
+        # First convolutional layer: input channels=1, output channels=16
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, padding=1)
+        # Second convolutional layer: input channels=16, output channels=32
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
+        
         self.pool = nn.MaxPool2d(2, 2)
-        self.dropout = nn.Dropout(0.2)
-        self.fc1 = nn.Linear(4 * 14 * 14, 10)
+        self.dropout = nn.Dropout(0.3)  # Increased dropout rate
+        
+        # Increased size of FC layer
+        # After two max pooling layers, the image size will be 7x7
+        # With 32 channels, the input to FC will be 32 * 7 * 7
+        self.fc1 = nn.Linear(32 * 7 * 7, 128)  # Added larger intermediate FC layer
+        self.fc2 = nn.Linear(128, 10)  # Output layer
+        
         self.relu = nn.ReLU()
 
         # Move model to GPU
@@ -33,10 +42,23 @@ class First_CNN(method, nn.Module):
         self.scaler = torch.amp.GradScaler('cuda')
 
     def forward(self, x):
-        x = self.pool(self.relu(self.conv1(x)))
-        x = x.view(-1, 4 * 14 * 14)
-        x = self.dropout(x)  # Apply dropout before the final layer
-        x = self.fc1(x)
+        # First conv layer
+        x = self.relu(self.conv1(x))
+        x = self.pool(x)
+        
+        # Second conv layer
+        x = self.relu(self.conv2(x))
+        x = self.pool(x)
+        
+        # Flatten the tensor for FC layers
+        x = x.view(-1, 32 * 7 * 7)
+        
+        # FC layers with dropout
+        x = self.dropout(x)
+        x = self.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = self.fc2(x)
+        
         return x
 
     def evaluate(self, test_y, pred_y):
@@ -101,8 +123,9 @@ class First_CNN(method, nn.Module):
             self.loss_history.append(avg_loss)
             self.accuracy_history.append(accuracy)
 
-            if epoch % 50 == 0:
-                print(f"Epoch {epoch}, Loss: {avg_loss:.4f}, Acc: {accuracy:.4f}")
+            # if epoch % 50 == 0:
+            if 1:
+                    print(f"Epoch {epoch}, Loss: {avg_loss:.4f}, Acc: {accuracy:.4f}")
 
     def test(self, X):
         # Save the training mode state
@@ -134,24 +157,6 @@ class First_CNN(method, nn.Module):
             # Restore the original training mode state
             self.training = training
 
-    def plot_learning_curves(self):
-        plt.figure(figsize=(12, 5))
-
-        plt.subplot(1, 2, 1)
-        plt.plot(self.loss_history)
-        plt.title('Training Loss')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-
-        plt.subplot(1, 2, 2)
-        plt.plot(self.accuracy_history)
-        plt.title('Training Accuracy')
-        plt.xlabel('Epoch')
-        plt.ylabel('Accuracy')
-
-        plt.tight_layout()
-        plt.savefig('learning_curves_simple.png')
-        print("Saved learning_curves_simple.png")
 
     def run(self):
         print('method running...')
